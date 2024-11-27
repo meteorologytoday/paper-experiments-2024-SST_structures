@@ -1,8 +1,18 @@
 #!/bin/bash
 
+script_dir=$( dirname $( realpath $0 ) )
+
+if [ "$1" = "" ]; then
+
+    echo "Error: First argument must be given (geostrophic wind U)"
+    exit 1
+
+fi
+
+
 SST_base=288.15 # 15 degC
-RH=90
-U=15
+RH=0
+U=$1
 deltaGamma=3e-3
 z_st=10000.0
 
@@ -15,7 +25,7 @@ fig_dir=sounding_plot
 mkdir -p $data_dir
 mkdir -p $fig_dir
 
-python3 make_ideal_sounding_simple.py \
+python3 $script_dir/make_ideal_sounding_simple.py \
     --output $data_dir/${fileprefix}.ref \
     --Delta-Gamma $deltaGamma \
     --U $U   \
