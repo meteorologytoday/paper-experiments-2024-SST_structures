@@ -23,8 +23,9 @@ def getGridFromGridDensity(sigma, sigma_density, new_grid_number, reverse=False)
     for i in range(1, N):
         gn[i] = gn[i-1] + (sigma_density[i] + sigma_density[i-1]) * (sigma[i] - sigma[i-1]) / 2
 
+    norm_factor = (new_grid_number-1) / gn[-1]
 
-    gn = gn * (new_grid_number-1) / gn[-1]
+    gn = gn * norm_factor
 
     grids = np.interp(
         np.arange(new_grid_number),
@@ -38,18 +39,19 @@ def getGridFromGridDensity(sigma, sigma_density, new_grid_number, reverse=False)
         grids = grids[::-1]
 
 
-    return grids, gn
+    return grids, gn, norm_factor
 
+"""
+# This is the default WRF layers.
+# I only put them here for the purpose of comparison.
+WRF_default_sigma = np.array([1, 0.9339951, 0.8719891, 0.81374, 0.7590199, 0.7076152, 0.659325, 0.6139605, 0.5713445, 0.5313104, 0.493702, 0.458372, 0.4251827, 0.3940042, 0.3647146, 0.3371996, 0.3113517, 0.2870699, 0.2642592, 0.2428305, 0.2227001, 0.2037894, 0.1860244, 0.1693357, 0.1536582, 0.1389305, 0.1250951, 0.112098, 0.09988828, 0.08841833, 0.07764333, 0.06752115, 0.05801222, 0.04907943, 0.04068783, 0.03280466, 0.02539911, 0.01844224, 0.01190686, 0.005767446, 0 ])
 
-sigma = [1, 0.9339951, 0.8719891, 0.81374, 0.7590199, 0.7076152, 0.659325, 0.6139605, 0.5713445, 0.5313104, 0.493702, 0.458372, 0.4251827, 0.3940042, 0.3647146, 0.3371996, 0.3113517, 0.2870699, 0.2642592, 0.2428305, 0.2227001, 0.2037894, 0.1860244, 0.1693357, 0.1536582, 0.1389305, 0.1250951, 0.112098, 0.09988828, 0.08841833, 0.07764333, 0.06752115, 0.05801222, 0.04907943, 0.04068783, 0.03280466, 0.02539911, 0.01844224, 0.01190686, 0.005767446, 0 ]
-
-sigma = np.array(sigma)
-dsigma = sigma[:-1] - sigma[1:]
+WRF_default_dsigma = WRF_default_sigma[:-1] - WRF_default_sigma[1:]
 
 kappa = 2.0 / 7.0
-Pi = sigma ** kappa
-dPi = Pi[:-1] - Pi[1:]
-
+WRF_default_Pi = WRF_default_sigma ** kappa
+WRF_default_dPi = WRF_default_Pi[:-1] - WRF_default_Pi[1:]
+"""
 
 def genGridDensity(N, den1=50, den2=200, sig_mixed_layer = 0.75, transition_thickness=0.25, reverse=False):
 
@@ -76,12 +78,16 @@ def genGridDensity(N, den1=50, den2=200, sig_mixed_layer = 0.75, transition_thic
 
     return sigma, sigma_density
 
-sigma, sigma_density = genGridDensity(1001, reverse=True, den1=50, den2=50)
-mycoor, gn = getGridFromGridDensity(sigma, sigma_density, 101, reverse=True) 
-dmycoor = mycoor[:-1] - mycoor[1:]
+#sigma_hires, sigma_density = genGridDensity(1001, reverse=True, den1=50, den2=50)
+sigma_hires, sigma_density = genGridDensity(1001, reverse=True)
+sigma, gn_hires, norm_factor = getGridFromGridDensity(sigma_hires, sigma_density, 101, reverse=True) 
+
+output_str = ", ".join(["%.04f" % c for c in sigma])
 
 
-output_str = ", ".join(["%.04f" % c for c in mycoor])
+with open("grid.txt", "w") as f:
+    f.write(output_str)
+
 
 print("Output coordinate string:")
 print(output_str)
@@ -89,22 +95,28 @@ print(output_str)
 
 import matplotlib as mplt
 mplt.use("TkAgg")
-
 import matplotlib.pyplot as plt
 
+fig, ax = plt.subplots(1, 2, squeeze=False, sharey=True)
 
-fig, ax = plt.subplots(3, 2)
+ax[0, 0].plot(sigma_density * norm_factor, sigma_hires, "k-")
+ax[0, 1].plot(gn_hires,      sigma_hires, "k-")
 
-ax[0, 0].plot(sigma, marker='.')
-ax[0, 1].plot(dsigma, marker='.')
+ax[0, 0].set_ylabel("Sigma")
+ax[0, 0].invert_yaxis()
 
-ax[1, 0].plot(sigma, sigma_density, marker='.')
-ax[1, 1].plot(sigma, gn, marker='.')
+ax[0, 0].set_xlabel("Density")
+ax[0, 1].set_xlabel("Numbering")
+
+ax[0, 0].set_title("(a) Relative grid density $\\mathrm{d}N/\\mathrm{d}\\sigma$")
+ax[0, 1].set_title("(b) Grid Numbering")
 
 
-ax[2, 0].plot(mycoor, marker='.')
-ax[2, 1].plot(dmycoor, marker='.')
+ax[0, 0].set_xlim([0, None])
 
+for _ax in ax.flatten():
+    _ax.grid()
 
+fig.savefig("grid_design.png", dpi=200)
 
 plt.show()

@@ -157,7 +157,7 @@ for U in Us:
         print("File %s already exist." % filename)
     else:
         print("File %s does not exist. Generate it now..." % (filename,) )
-        pleaseRun("./gen_sounding.sh %d" % (U,))
+        pleaseRun("../01_sounding/gen_sounding.sh %d" % (U,))
 
 # Generate cases
 for i, sim_case in enumerate(sim_cases):
