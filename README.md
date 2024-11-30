@@ -1,9 +1,12 @@
-# paper-experiments-2024-SST_structures
+# Introduction
+
+This repo contains code to generate WRF experiments described in the paper "The Modification of Air-Sea Fluxes by Sinusoidal Sea Surface Temperature Structures in a Cross-gradient Scenario".
+
+
 
 ## Directory `01_sounding`
 
-
-## Directory `02_sounding`
+## Directory `02_vertical_grid`
 
 ## Directory `03_modified_WRF_code`
 
@@ -25,3 +28,11 @@ For the `SIMPLE` case, where the latent heat Here I list what is done in each fi
     1. Set `FLQC` to zero so that there is no latent heat. See L.878-887.
 
 
+## Directory `11_WRFRUN_SIMPLE`
+
+This directory contains files to generate WRF cases to run. Run `python3 mkcases.py` to produces a folder named `lab_SIMPLE` containing all the needed simulations.
+
+
+## Directory `12_WRFRUN_SIMPLE`
+
+This directory contains files to generate WRF cases to run. Run `python3 mkcases.py` to produces a folder named `lab_FULL` containing all the needed simulations.
