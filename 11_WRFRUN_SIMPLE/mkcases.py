@@ -80,7 +80,7 @@ T0    = 273.15 + 15.0
 dx = 2000.0 # 2km
 dy = 2000.0 # 2km
 Nx = 1000
-bl_scheme = ["MYNN25",]
+bl_scheme = ["MYNN25", "MYJ", "YSU"]
 mp_heating = ["off"]
 
 BIGSELECTOR = "VARY_LX_AND_US"
