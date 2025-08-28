@@ -4,7 +4,7 @@
 
 lab_dir=./lab_FULL
 
-target_file=wrfout_d01_2001-01-19_23:00:00
+target_file=wrfout_d01_2001-01-19_00:00:00
 for run_dir in $( ls $lab_dir ) ; do
 
 
@@ -12,14 +12,28 @@ for run_dir in $( ls $lab_dir ) ; do
 
    
      
-    #if ! [[ "$run_dir" =~ "MYNN25" ]]; then
-    #    echo "Skip $run_dir"
-    #    continue
-    #fi
+    if ! [[ "$run_dir" =~ "MYNN25" ]]; then
+        echo "Skip $run_dir"
+        continue
+    fi
 
+    if ! ( [[ "$run_dir" =~ "U10" ]] ) ; then
+        echo "Skip $run_dir"
+        continue
+    fi
+
+    if [ ] ; then
     if ! ( [[ "$run_dir" =~ "dT100" ]] ) ; then
         echo "Skip $run_dir"
         continue
+    fi
+    fi
+
+    if [ ] ; then
+    if ! ( [[ "$run_dir" =~ "wnm010" ]] ) ; then
+        echo "Skip $run_dir"
+        continue
+    fi
     fi
 
 
@@ -35,7 +49,7 @@ for run_dir in $( ls $lab_dir ) ; do
     else
         echo "Submitting the case: $run_dir" 
         cd $full_run_dir
-        sbatch --time 72:00:00 submit_cw3e-shared.sh
+        #sbatch --time 72:00:00 submit_cw3e-shared.sh
         #sbatch submit_cw3e-compute.sh
     fi
     cd $cwd

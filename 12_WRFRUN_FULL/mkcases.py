@@ -91,7 +91,7 @@ print("!!!!!!!!! BIGSELECTOR = ", BIGSELECTOR)
 if BIGSELECTOR == "VARY_LX_AND_US":
 
     bl_scheme = ["MYNN25", "MYJ", "YSU", ]
-    Us    = np.array([20,], dtype=float)
+    Us    = np.array([15, ], dtype=float)
     dTs    = np.array([0.0, 0.1, 0.3, 0.5, 1, 1.5, 2, 2.5, 3.0], dtype=float)
     wnms = np.array([0, 4, 5, 7, 10, 20, 40,], dtype=float) 
 
