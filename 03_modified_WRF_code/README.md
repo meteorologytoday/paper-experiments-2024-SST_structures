@@ -1,6 +1,8 @@
 # Explaination
 
 The code actually get used in the paper are below. The unlisted ones are just useful to know, especially modifying the radiation.
+The WRF version is V4.6.0, compiled with gcc. Configuration on expanse see the file `bashrc_WRF_gcc`.
+
 
 ## Idealized Simulations
 
