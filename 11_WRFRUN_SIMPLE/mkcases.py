@@ -2,6 +2,8 @@ import numpy as np
 import os
 import json
 import f90nml
+from pathlib import Path
+from mkcaseslib.script_gen import genScript
 
 def pleaseRun(cmd):
 
@@ -10,7 +12,10 @@ def pleaseRun(cmd):
 
 lab_name = "lab_SIMPLE"
 
-ref_WRF_root = "/home/t2hsu/models/WRF_gcc/SST_structure_paper/WRFV4.6.0_SIMPLE"
+test_file_for_startrun   = "wrfout_d01_2001-01-01_00:00:00" 
+test_file_for_completion = "wrfout_d01_2001-01-01_03:00:00" 
+
+ref_WRF_root = Path("WRFV4.6.0_SIMPLE").resolve()
 ref_namelist = "namelist.input"
 ref_caserundir = "%s/test/em_quarter_ss" % ( ref_WRF_root,)
 
@@ -196,67 +201,35 @@ for i, sim_case in enumerate(sim_cases):
             case_folder,)
         )
 
-        pleaseRun("f90nml -p -g domains -v e_we=%d -v dx=%f %s/namelist.tmp > %s/namelist.input" % (
+        pleaseRun("f90nml -p -g domains -v e_we=%d -v dx=%f %s/namelist.tmp > %s/namelist.tmp2" % (
             sim_case["Nx"] + 1,
             sim_case["dx"],
             case_folder,
             case_folder,
         ))
 
+        pleaseRun("mv %s/namelist.tmp2 %s/namelist.tmp" % (
+            case_folder,
+            case_folder,
+        ))
+
+
         # Write settings
         with open('%s/run_setting.json' % (case_folder,), 'w', encoding='utf-8') as f:
             json.dump(sim_case, f, ensure_ascii=False, indent=4)
 
     for partition, memory in [
-        ["cw3e-compute", "40G",],
-        ["cw3e-shared",  "20G",],
+        ["shared-128",  "4G",],
     ]: 
         with open('%s/submit_%s.sh' % (case_folder, partition), 'w', encoding='utf-8') as f:
-            f.write("""#!/bin/bash
-#SBATCH -p {partition:s}
-#SBATCH --nodes=1
-#SBATCH --ntasks-per-node=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem={memory:s}
-#SBATCH -t 24:00:00
-#SBATCH -J {jobname:s}
-#SBATCH -A csg102
-#SBATCH -o {jobname:s}.%j.%N.out
-#SBATCH -e {jobname:s}.%j.%N.err
-#SBATCH --export=ALL
+            f.write(genScript(
+                jobname=sim_case['casename_short'],
+                partition=partition,
+                memory=memory,
+                test_file_for_completion=test_file_for_completion,
+                test_file_for_startrun=test_file_for_startrun,
+            ))
 
-export SLURM_EXPORT_ENV=ALL
-
-source /home/t2hsu/.bashrc_WRF_gcc
-
-
-local_scratch=/scratch/${{USER}}/job_${{SLURM_JOBID}}
-
-
-echo "Local scratch    : $local_scratch"
-echo "SLURM_SUBMIT_DIR : $SLURM_SUBMIT_DIR"
-
-
-echo "Copying files to local scratch"
-
-ls | grep -v -e wrfout -e wrfrst -e ".err" -e ".out" | xargs -I % cp % -t $local_scratch
-
-cd $local_scratch
-
-echo "Current directory: `pwd`"
-echo "Running run_sine.sh"
-bash ./run_sine.sh &
-PID=$!
-echo "WRF pid = $PID"
-
-tail --retry -f --pid=$PID log.run
-
-echo "Program finished. Copy files back..."
-ls | xargs -I % cp % -t $SLURM_SUBMIT_DIR
-
-echo "Output files copied."
-
-""".format(jobname=sim_case['casename_short'], partition=partition, memory=memory))
 
 
 
